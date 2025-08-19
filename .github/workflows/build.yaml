@@ -99,49 +99,30 @@ jobs:
     - name: Display structure of downloaded files
       run: ls -la artifacts/
 
-    - name: Generate changelog
-      id: changelog
+    - name: Prepare release
+      id: release
       run: |
         if [[ ${{ github.ref }} == refs/tags/v* ]]; then
           echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           echo "RELEASE_NAME=SourcePad ${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           echo "IS_TAG=true" >> $GITHUB_OUTPUT
+          cp .github/templates/release.md release_body.md
         else
           echo "TAG_NAME=nightly-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
           echo "RELEASE_NAME=SourcePad Nightly Build" >> $GITHUB_OUTPUT
           echo "IS_TAG=false" >> $GITHUB_OUTPUT
+          cp .github/templates/nightly.md release_body.md
+          sed -i "s/Auto-generated from latest master/$(date +'%Y-%m-%d %H:%M:%S UTC')/g" release_body.md
         fi
-        
-        # Генерируем changelog из последних коммитов
-        {
-          echo 'CHANGELOG<<EOF'
-          if [[ ${{ github.ref }} == refs/tags/v* ]]; then
-            if git describe --tags --abbrev=0 HEAD^ >/dev/null 2>&1; then
-              git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD
-            else
-              echo "## Release Notes"
-              echo ""
-              git log --pretty=format:"- %s" -10
-            fi
-          else
-            echo "## Nightly Build - $(date +'%Y-%m-%d %H:%M:%S')"
-            echo ""
-            echo "This is an automated nightly build from the latest master branch."
-            echo ""
-            echo "### Recent Changes:"
-            git log --pretty=format:"- %s" -10
-          fi
-          echo 'EOF'
-        } >> $GITHUB_OUTPUT
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ steps.changelog.outputs.TAG_NAME }}
-        name: ${{ steps.changelog.outputs.RELEASE_NAME }}
-        body: ${{ steps.changelog.outputs.CHANGELOG }}
-        draft: ${{ steps.changelog.outputs.IS_TAG == 'false' }}
-        prerelease: ${{ steps.changelog.outputs.IS_TAG == 'false' }}
+        tag_name: ${{ steps.release.outputs.TAG_NAME }}
+        name: ${{ steps.release.outputs.RELEASE_NAME }}
+        body_path: release_body.md
+        draft: ${{ steps.release.outputs.IS_TAG == 'false' }}
+        prerelease: ${{ steps.release.outputs.IS_TAG == 'false' }}
         files: |
           artifacts/linux-builds/*
           artifacts/windows-builds/*
@@ -149,6 +130,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # Дополнительная проверка только сборки (без релиза) для PR
   test-build:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
