@@ -113,18 +113,26 @@ jobs:
         fi
         
         # Генерируем changelog из последних коммитов
-        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
-        if [[ ${{ github.ref }} == refs/tags/v* ]]; then
-          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> $GITHUB_OUTPUT
-        else
-          echo "## Nightly Build - $(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "This is an automated nightly build from the latest master branch." >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
-          echo "### Recent Changes:" >> $GITHUB_OUTPUT
-          git log --pretty=format:"- %s" -10 >> $GITHUB_OUTPUT
-        fi
-        echo "EOF" >> $GITHUB_OUTPUT
+        {
+          echo 'CHANGELOG<<EOF'
+          if [[ ${{ github.ref }} == refs/tags/v* ]]; then
+            if git describe --tags --abbrev=0 HEAD^ >/dev/null 2>&1; then
+              git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD
+            else
+              echo "## Release Notes"
+              echo ""
+              git log --pretty=format:"- %s" -10
+            fi
+          else
+            echo "## Nightly Build - $(date +'%Y-%m-%d %H:%M:%S')"
+            echo ""
+            echo "This is an automated nightly build from the latest master branch."
+            echo ""
+            echo "### Recent Changes:"
+            git log --pretty=format:"- %s" -10
+          fi
+          echo 'EOF'
+        } >> $GITHUB_OUTPUT
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
