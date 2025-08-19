@@ -134,6 +134,25 @@ function initializeEditor() {
             currentFileName = `Untitled.${getFileExtension(templateName)}`;
         }
 
+        try {
+            const storedContent = sessionStorage.getItem('sourcepad.open.content');
+            const storedFilename = sessionStorage.getItem('sourcepad.open.filename');
+            if (storedContent !== null) {
+                initialContent = storedContent;
+                if (storedFilename) {
+                    const ext = storedFilename.split('.').pop().toLowerCase();
+                    const lang = getLanguageByExtension(ext);
+                    initialLanguage = lang;
+                    currentFileName = storedFilename;
+                }
+
+                sessionStorage.removeItem('sourcepad.open.content');
+                sessionStorage.removeItem('sourcepad.open.filename');
+            }
+        } catch (err) {
+            console.warn('Could not access sessionStorage for incoming file:', err);
+        }
+
         editor = monaco.editor.create(document.getElementById('editor'), {
             value: initialContent,
             language: initialLanguage,

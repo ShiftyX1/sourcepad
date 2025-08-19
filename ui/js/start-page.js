@@ -88,11 +88,15 @@ console.log('Hello, World!');
     }
 };
 
-function openEditor(template = null) {
+function openEditor(template = null, content = null) {
     const params = new URLSearchParams();
     
     if (template) {
         params.set('template', template);
+    }
+
+    if (content) {
+        params.set('content', content);
     }
     
     const url = `editor.html${params.toString() ? '?' + params.toString() : ''}`;
@@ -109,8 +113,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     openEditor();
                     break;
                 case 'open':
-                    // TODO: Реализовать диалог открытия файла
                     console.log('Open file dialog');
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.js,.ts,.html,.css,.py,.json,.md,.txt,.xml,.yaml,.yml,.sql';
+                    input.addEventListener('change', function(event) {
+                        const file = event.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const content = e.target.result;
+                                try {
+                                    sessionStorage.setItem('sourcepad.open.content', content);
+                                    sessionStorage.setItem('sourcepad.open.filename', file.name);
+                                } catch (err) {
+                                    console.error('Failed to store file in sessionStorage', err);
+                                }
+                                window.location.href = 'editor.html';
+                            };
+                            reader.readAsText(file);
+                        }
+                    });
+                    input.click();
                     break;
                 case 'folder':
                     // TODO: Реализовать открытие папки
@@ -136,7 +160,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
                 case 'o':
                     e.preventDefault();
-                    console.log('Open file shortcut');
+                    // Trigger the same open-file action as the button
+                    const openBtn = document.querySelector('.action-item[data-action="open"]');
+                    if (openBtn) openBtn.click();
                     break;
             }
         }
