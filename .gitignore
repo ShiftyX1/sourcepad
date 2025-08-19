@@ -1,0 +1,5 @@
+node_modules
+ui/monaco-editor
+dist/
+
+.DS_Store

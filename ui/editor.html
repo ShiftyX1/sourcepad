@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SourcePad - Code Editor</title>
+    <link rel="stylesheet" href="./styles/editor.css">
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="menu-left">
+            <button class="menu-btn back-btn" id="backBtn" title="Back to Start">
+                ← SourcePad
+            </button>
+        </div>
+        
+        <div class="menu-center">
+            <span class="file-name" id="fileName">Untitled</span>
+        </div>
+        
+        <div class="menu-right">
+            <select id="language" class="language-select">
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="python">Python</option>
+                <option value="json">JSON</option>
+                <option value="markdown">Markdown</option>
+                <option value="xml">XML</option>
+                <option value="yaml">YAML</option>
+                <option value="sql">SQL</option>
+            </select>
+            
+            <button class="menu-btn" id="saveBtn" title="Save File">
+                Save
+            </button>
+            
+            <button class="menu-btn" id="openBtn" title="Open File">
+                Open
+            </button>
+        </div>
+    </div>
+    <div class="editor-container">
+        <div id="editor"></div>
+    </div>
+    <div class="status-bar">
+        <div class="status-left">
+            <span class="status-item" id="lineCount">Lines: 0</span>
+            <span class="status-item" id="charCount">Characters: 0</span>
+        </div>
+        
+        <div class="status-right">
+            <span class="status-item" id="cursorPosition">Ln 1, Col 1</span>
+            <button class="status-btn" id="themeToggle">🌙 Dark</button>
+        </div>
+    </div>
+    <script src="./monaco-editor/vs/loader.js"></script>
+    <script src="./js/editor.js"></script>
+</body>
+</html>

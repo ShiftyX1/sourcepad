@@ -1,0 +1,251 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Courier New', monospace;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-bar {
+    background: #2d2d30;
+    border-bottom: 1px solid #3e3e42;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.menu-left,
+.menu-center,
+.menu-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.menu-center {
+    flex: 1;
+    justify-content: center;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: #cccccc;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.menu-btn:hover {
+    background: #094771;
+    color: #ffffff;
+}
+
+.back-btn {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.back-btn:hover {
+    background: #0e639c;
+}
+
+.file-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #cccccc;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.language-select {
+    background: #3c3c3c;
+    border: 1px solid #464647;
+    color: #cccccc;
+    padding: 2px 6px;
+    font-size: 11px;
+    border-radius: 3px;
+    outline: none;
+}
+
+.language-select:focus {
+    border-color: #007acc;
+}
+
+.editor-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#editor {
+    height: 100%;
+    width: 100%;
+}
+
+.status-bar {
+    background: #007acc;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    font-size: 12px;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.status-left,
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.status-item {
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.status-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 2px;
+    transition: background 0.2s ease;
+}
+
+.status-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.monaco-editor {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Source Code Pro', Consolas, 'Courier New', monospace !important;
+}
+
+.monaco-editor .margin {
+    background-color: #1e1e1e !important;
+}
+
+.monaco-editor .monaco-scrollable-element>.scrollbar>.slider {
+    background: rgba(121, 121, 121, 0.4) !important;
+}
+
+.monaco-editor .monaco-scrollable-element>.scrollbar>.slider:hover {
+    background: rgba(121, 121, 121, 0.7) !important;
+}
+
+.monaco-editor ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.monaco-editor ::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+.monaco-editor ::-webkit-scrollbar-thumb {
+    background: rgba(121, 121, 121, 0.4);
+    border-radius: 5px;
+}
+
+.monaco-editor ::-webkit-scrollbar-thumb:hover {
+    background: rgba(121, 121, 121, 0.7);
+}
+
+.monaco-editor ::-webkit-scrollbar-corner {
+    background: #1e1e1e;
+}
+
+body.light-theme {
+    background: #ffffff;
+    color: #333333;
+}
+
+body.light-theme .menu-bar {
+    background: #f3f3f3;
+    border-bottom-color: #e1e1e1;
+}
+
+body.light-theme .menu-btn {
+    color: #333333;
+}
+
+body.light-theme .menu-btn:hover {
+    background: #e1e1e1;
+    color: #000000;
+}
+
+body.light-theme .file-name {
+    color: #333333;
+}
+
+body.light-theme .language-select {
+    background: #ffffff;
+    border-color: #d1d1d1;
+    color: #333333;
+}
+
+body.light-theme .status-bar {
+    background: #007acc;
+}
+
+@media (max-width: 768px) {
+    .menu-bar {
+        padding: 0 5px;
+    }
+
+    .menu-left,
+    .menu-right {
+        gap: 5px;
+    }
+
+    .menu-btn {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+
+    .file-name {
+        max-width: 120px;
+        font-size: 12px;
+    }
+
+    .status-bar {
+        padding: 0 5px;
+    }
+
+    .status-left,
+    .status-right {
+        gap: 10px;
+    }
+}
+
+button:focus-visible {
+    outline: 2px solid #007acc;
+    outline-offset: 1px;
+}
+
+select:focus-visible {
+    outline: 2px solid #007acc;
+    outline-offset: 1px;
+}

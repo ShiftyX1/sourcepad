@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SourcePad</title>
+    <link rel="stylesheet" href="./styles/start-page.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">
+                <span class="logo">⚡</span>
+                <span class="app-name">SourcePad</span>
+            </div>
+            <div class="version">v0.0.1</div>
+        </div>
+
+        <div class="content">
+            <div class="left-panel">
+                <div class="section">
+                    <h3>Start</h3>
+                    <div class="action-list">
+                        <button class="action-item" data-action="new">
+                            <span class="text">New file</span>
+                            <span class="shortcut">Ctrl+N</span>
+                        </button>
+                        <button class="action-item" data-action="open">
+                            <span class="text">Open file...</span>
+                            <span class="shortcut">Ctrl+O</span>
+                        </button>
+                        <button class="action-item" data-action="folder">
+                            <span class="text">Open folder...</span>
+                            <span class="shortcut">Ctrl+K Ctrl+O</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Recent</h3>
+                    <div class="recent-list" id="recentList">
+                        <div class="empty-message">
+                            <span class="empty-text">No recent files</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="section">
+                    <h3>Create</h3>
+                    <div class="template-grid">
+                        <button class="template-item" data-template="javascript">
+                            <span class="template-icon js">JS</span>
+                            <span class="template-name">JavaScript</span>
+                        </button>
+                        <button class="template-item" data-template="html">
+                            <span class="template-icon html">HTML</span>
+                            <span class="template-name">HTML</span>
+                        </button>
+                        <button class="template-item" data-template="css">
+                            <span class="template-icon css">CSS</span>
+                            <span class="template-name">CSS</span>
+                        </button>
+                        <button class="template-item" data-template="python">
+                            <span class="template-icon py">PY</span>
+                            <span class="template-name">Python</span>
+                        </button>
+                        <button class="template-item" data-template="json">
+                            <span class="template-icon json">JSON</span>
+                            <span class="template-name">JSON</span>
+                        </button>
+                        <button class="template-item" data-template="markdown">
+                            <span class="template-icon md">MD</span>
+                            <span class="template-name">Markdown</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section help-section">
+                    <h3>Help</h3>
+                    <div class="help-list">
+                        <div class="help-item">
+                            <span class="help-text">Show all commands</span>
+                            <span class="help-shortcut">Ctrl+Shift+P</span>
+                        </div>
+                        <div class="help-item">
+                            <span class="help-text">Toggle sidebar</span>
+                            <span class="help-shortcut">Ctrl+B</span>
+                        </div>
+                        <div class="help-item">
+                            <span class="help-text">Split editor</span>
+                            <span class="help-shortcut">Ctrl+\\</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/start-page.js"></script>
+</body>
+
+</html>

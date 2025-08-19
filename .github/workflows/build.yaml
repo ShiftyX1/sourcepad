@@ -1,0 +1,172 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ master, main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Setup Monaco Editor
+      run: npm run setup
+
+    - name: Build Electron app (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: npm run build:linux
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build Electron app (Windows)
+      if: matrix.os == 'windows-latest'
+      run: npm run build:win
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build Electron app (macOS)
+      if: matrix.os == 'macos-latest'
+      run: npm run build:mac
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # TODO: подпись для macOS
+        # CSC_LINK: ${{ secrets.CSC_LINK }}
+        # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        # APPLEID: ${{ secrets.APPLEID }}
+        # APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+
+    - name: Upload artifacts (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-builds
+        path: |
+          dist/*.AppImage
+          dist/*.deb
+          dist/*.rpm
+
+    - name: Upload artifacts (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-builds
+        path: |
+          dist/*.exe
+          dist/*.msi
+
+    - name: Upload artifacts (macOS)
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-builds
+        path: |
+          dist/*.dmg
+          dist/*.zip
+
+  release:
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Display structure of downloaded files
+      run: ls -la artifacts/
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        if [[ ${{ github.ref }} == refs/tags/v* ]]; then
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "RELEASE_NAME=SourcePad ${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "IS_TAG=true" >> $GITHUB_OUTPUT
+        else
+          echo "TAG_NAME=nightly-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+          echo "RELEASE_NAME=SourcePad Nightly Build" >> $GITHUB_OUTPUT
+          echo "IS_TAG=false" >> $GITHUB_OUTPUT
+        fi
+        
+        # Генерируем changelog из последних коммитов
+        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+        if [[ ${{ github.ref }} == refs/tags/v* ]]; then
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> $GITHUB_OUTPUT
+        else
+          echo "## Nightly Build - $(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "This is an automated nightly build from the latest master branch." >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### Recent Changes:" >> $GITHUB_OUTPUT
+          git log --pretty=format:"- %s" -10 >> $GITHUB_OUTPUT
+        fi
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.changelog.outputs.TAG_NAME }}
+        name: ${{ steps.changelog.outputs.RELEASE_NAME }}
+        body: ${{ steps.changelog.outputs.CHANGELOG }}
+        draft: ${{ steps.changelog.outputs.IS_TAG == 'false' }}
+        prerelease: ${{ steps.changelog.outputs.IS_TAG == 'false' }}
+        files: |
+          artifacts/linux-builds/*
+          artifacts/windows-builds/*
+          artifacts/macos-builds/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test-build:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Setup Monaco Editor
+      run: npm run setup
+
+    - name: Test build (pack only)
+      run: npm run pack
+
+    - name: Upload test build
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-build
+        path: dist/
+        retention-days: 7
