@@ -2,7 +2,7 @@
 
 Simple code editor built with Monaco Editor and Electron + TypeScript/Vite.
 
-[![Release](https://img.shields.io/github/v/release/ShiftyX1/sourcepad)](https://github.com/ShiftyX1/sourcepad/releases)
+[![Release](https://img.shields.io/github/v/release/ShiftyX1/sourcepad?color=blue)](https://github.com/ShiftyX1/sourcepad/releases)
 [![GitHub downloads](https://img.shields.io/github/downloads/ShiftyX1/sourcepad/total)](https://github.com/ShiftyX1/sourcepad/releases)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/ShiftyX1/sourcepad/build.yaml?branch=master)](https://github.com/ShiftyX1/sourcepad/actions)
 [![License](https://img.shields.io/github/license/ShiftyX1/sourcepad?label=license)](https://github.com/ShiftyX1/sourcepad/blob/master/LICENSE)
