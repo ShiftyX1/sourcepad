@@ -82,8 +82,9 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Setup Monaco Editor
-      run: npm run setup
+    # Legacy task
+    # - name: Setup Monaco Editor
+    #   run: npm run setup
 
     - name: Build Electron app (Linux)
       if: matrix.os == 'ubuntu-latest'
