@@ -20,17 +20,20 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
-        cache: 'npm'
+        node-version: '20'
+        cache: 'pnpm'
+
+    - name: Install pnpm
+      run: npm install -g pnpm
 
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install
 
     - name: Run lint check
       id: lint-check
       run: |
         echo "Running initial lint check..."
-        if npm run lint 2>&1 | tee lint-output.log; then
+        if pnpm run lint 2>&1 | tee lint-output.log; then
           echo "lint_passed=true" >> $GITHUB_OUTPUT
           echo "✅ Lint passed successfully"
         else
@@ -49,14 +52,14 @@ jobs:
       if: steps.lint-check.outputs.lint_passed == 'false'
       run: |
         echo "🔧 Attempting to auto-fix lint errors..."
-        npm run lint:fix
+        pnpm run lint:fix
 
     - name: Run lint check after auto-fix
       if: steps.lint-check.outputs.lint_passed == 'false'
       id: lint-recheck
       run: |
         echo "Running lint check after auto-fix..."
-        if npm run lint 2>&1 | tee lint-recheck-output.log; then
+        if pnpm run lint 2>&1 | tee lint-recheck-output.log; then
           echo "recheck_passed=true" >> $GITHUB_OUTPUT
           echo "✅ Lint passed after auto-fix"
         else
