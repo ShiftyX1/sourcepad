@@ -33,37 +33,34 @@ git clone https://github.com/yourusername/sourcepad.git
 cd sourcepad
 
 # Install dependencies
-npm install
+pnpm install
 
 # Start development
-npm run dev:full
+pnpm run dev:full
 ```
 
 ## Development
 
 ### Prerequisites
 - Node.js v22.16.0
-- npm or yarn
+- pnpm or yarn
 
 ### Setup
 ```bash
-npm install          # Install all dependencies
-npm run dev:full     # Start in development mode
+pnpm install          # Install all dependencies
+pnpm run dev:full     # Start in development mode
 ```
 
 ### Building for Production
 
 ```bash
 # Build for all platforms
-npm run build
+pnpm run build
 
 # Build for specific platform
-npm run build:win     # Windows
-npm run build:mac     # macOS
-npm run build:linux   # Linux
-
-# Create package without installer
-npm run pack
+pnpm run build:win     # Windows
+pnpm run build:mac     # macOS
+pnpm run build:linux   # Linux
 ```
 
 ## Project Structure
