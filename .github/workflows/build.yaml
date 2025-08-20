@@ -16,20 +16,7 @@ on:
       - 'tsconfig.node.json'
       - 'vite.preload.config.ts'
     tags: [ 'v*' ]
-  pull_request:
-    branches: [ master, main ]
-    paths:
-      - 'src/**'
-      - 'assets/**' 
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'electron/**'
-      - 'vite.config.ts'
-      - 'eslint.config.js'
-      - 'tsconfig.json'
-      - 'tsconfig.node.json'
-      - 'vite.preload.config.ts'
+
 
 jobs:
   detect-changes:
@@ -186,37 +173,3 @@ jobs:
           artifacts/macos-builds/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Быстрая проверка только сборки для PR
-  test-build:
-    if: |
-      github.event_name == 'pull_request' &&
-      needs.detect-changes.outputs.app-changed == 'true'
-    needs: detect-changes
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Setup Monaco Editor
-      run: npm run setup
-
-    - name: Test build (pack only)
-      run: npm run pack
-
-    - name: Upload test build
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-build
-        path: dist/
-        retention-days: 7
