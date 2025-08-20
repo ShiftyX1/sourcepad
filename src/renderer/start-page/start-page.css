@@ -78,13 +78,35 @@ body {
     margin-bottom: 24px;
 }
 
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
 .section h3 {
     font-size: 13px;
-    font-weight: 600;
     color: #cccccc;
     margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.clear-recent-btn {
+    background: transparent;
+    border: 1px solid #3e3e42;
+    color: #cccccc;
+    padding: 2px 8px;
+    font-size: 11px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: none;
+}
+
+.clear-recent-btn:hover {
+    background: #3e3e42;
+    border-color: #007acc;
 }
 
 .action-list {
@@ -160,6 +182,9 @@ body {
     cursor: pointer;
     transition: background-color 0.1s ease;
     margin-bottom: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .recent-item:hover {
@@ -170,6 +195,38 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 1;
+}
+
+.recent-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recent-remove {
+    background: transparent;
+    border: none;
+    color: #858585;
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+}
+
+.recent-item:hover .recent-remove {
+    opacity: 1;
+}
+
+.recent-remove:hover {
+    background: #f44336;
+    color: white;
 }
 
 .recent-name {
@@ -298,4 +355,43 @@ body {
     .template-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* Loading Indicator */
+.loading-backdrop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: #2d2d30;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #3e3e42;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #3e3e42;
+    border-top: 2px solid #007acc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-message {
+    color: #cccccc;
+    font-size: 12px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
