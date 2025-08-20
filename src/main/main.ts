@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
+import { readFileSync, writeFileSync } from 'fs'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -82,8 +83,7 @@ function createWindow(): void {
 }
 
 function setupIPC(): void {
-    // @ts-expect-error I know that ts expect is shit... Fuck off
-    ipcMain.on('window-close-response', (event, shouldClose: boolean) => {
+    ipcMain.on('window-close-response', (_, shouldClose: boolean) => {
         if (windowCloseCallback) {
             windowCloseCallback(shouldClose)
         }
@@ -97,8 +97,7 @@ function setupIPC(): void {
     ipcMain.handle('get-version', () => {
         return app.getVersion()
     })
-    // @ts-expect-error I know that ts expect is shit... Fuck off 2
-    ipcMain.handle('navigate-to-editor', (event, template?: string) => {
+    ipcMain.handle('navigate-to-editor', (_, template?: string) => {
         if (mainWindow) {
             const editorPath = join(__dirname, '../renderer/src/renderer/editor/index.html')
             let url = `file://${editorPath}`
@@ -119,6 +118,153 @@ function setupIPC(): void {
 
             console.log('Navigating to start:', url)
             mainWindow.loadURL(url)
+        }
+    })
+
+    ipcMain.handle('save-file', async (_, content: string, fileName: string) => {
+        try {
+            const result = await dialog.showSaveDialog(mainWindow!, {
+                defaultPath: fileName,
+                filters: [
+                    { name: 'All Files', extensions: ['*'] },
+                    { name: 'JavaScript', extensions: ['js', 'jsx'] },
+                    { name: 'TypeScript', extensions: ['ts', 'tsx'] },
+                    { name: 'HTML', extensions: ['html', 'htm'] },
+                    { name: 'CSS', extensions: ['css', 'scss', 'sass', 'less'] },
+                    { name: 'Python', extensions: ['py'] },
+                    { name: 'JSON', extensions: ['json'] },
+                    { name: 'Markdown', extensions: ['md', 'markdown'] },
+                    { name: 'Text', extensions: ['txt'] }
+                ]
+            })
+
+            if (!result.canceled && result.filePath) {
+                writeFileSync(result.filePath, content, 'utf8')
+                return result.filePath
+            }
+            return null
+        } catch (error) {
+            console.error('Error saving file:', error)
+            return null
+        }
+    })
+
+    ipcMain.handle('save-file-as', async (_, content: string, currentFilePath?: string) => {
+        try {
+            const result = await dialog.showSaveDialog(mainWindow!, {
+                defaultPath: currentFilePath,
+                filters: [
+                    { name: 'All Files', extensions: ['*'] },
+                    { name: 'JavaScript', extensions: ['js', 'jsx'] },
+                    { name: 'TypeScript', extensions: ['ts', 'tsx'] },
+                    { name: 'HTML', extensions: ['html', 'htm'] },
+                    { name: 'CSS', extensions: ['css', 'scss', 'sass', 'less'] },
+                    { name: 'Python', extensions: ['py'] },
+                    { name: 'JSON', extensions: ['json'] },
+                    { name: 'Markdown', extensions: ['md', 'markdown'] },
+                    { name: 'Text', extensions: ['txt'] }
+                ]
+            })
+
+            if (!result.canceled && result.filePath) {
+                writeFileSync(result.filePath, content, 'utf8')
+                return result.filePath
+            }
+            return null
+        } catch (error) {
+            console.error('Error saving file as:', error)
+            return null
+        }
+    })
+
+    ipcMain.handle('save-existing-file', async (_, content: string, filePath: string) => {
+        try {
+            writeFileSync(filePath, content, 'utf8')
+            return filePath
+        } catch (error) {
+            console.error('Error saving existing file:', error)
+            return null
+        }
+    })
+
+    ipcMain.handle('open-file', async () => {
+        try {
+            const result = await dialog.showOpenDialog(mainWindow!, {
+                properties: ['openFile'],
+                filters: [
+                    { name: 'All Files', extensions: ['*'] },
+                    { name: 'JavaScript', extensions: ['js', 'jsx'] },
+                    { name: 'TypeScript', extensions: ['ts', 'tsx'] },
+                    { name: 'HTML', extensions: ['html', 'htm'] },
+                    { name: 'CSS', extensions: ['css', 'scss', 'sass', 'less'] },
+                    { name: 'Python', extensions: ['py'] },
+                    { name: 'JSON', extensions: ['json'] },
+                    { name: 'Markdown', extensions: ['md', 'markdown'] },
+                    { name: 'Text', extensions: ['txt'] }
+                ]
+            })
+
+            if (!result.canceled && result.filePaths.length > 0) {
+                const filePath = result.filePaths[0]
+                const content = readFileSync(filePath, 'utf8')
+                const fileName = filePath.split('/').pop() || 'Untitled'
+                return { content, fileName, filePath }
+            }
+            return null
+        } catch (error) {
+            console.error('Error opening file:', error)
+            return null
+        }
+    })
+
+    ipcMain.handle('show-save-dialog', async (_, defaultPath?: string) => {
+        try {
+            const result = await dialog.showSaveDialog(mainWindow!, {
+                defaultPath,
+                filters: [
+                    { name: 'All Files', extensions: ['*'] },
+                    { name: 'JavaScript', extensions: ['js', 'jsx'] },
+                    { name: 'TypeScript', extensions: ['ts', 'tsx'] },
+                    { name: 'HTML', extensions: ['html', 'htm'] },
+                    { name: 'CSS', extensions: ['css', 'scss', 'sass', 'less'] },
+                    { name: 'Python', extensions: ['py'] },
+                    { name: 'JSON', extensions: ['json'] },
+                    { name: 'Markdown', extensions: ['md', 'markdown'] },
+                    { name: 'Text', extensions: ['txt'] }
+                ]
+            })
+
+            return result.canceled ? null : result.filePath
+        } catch (error) {
+            console.error('Error showing save dialog:', error)
+            return null
+        }
+    })
+
+    ipcMain.handle('show-open-dialog', async (_, filters?: { name: string; extensions: string[] }[]) => {
+        try {
+            const result = await dialog.showOpenDialog(mainWindow!, {
+                properties: ['openFile'],
+                filters: filters || [
+                    { name: 'All Files', extensions: ['*'] }
+                ]
+            })
+
+            return result.canceled ? null : result.filePaths
+        } catch (error) {
+            console.error('Error showing open dialog:', error)
+            return null
+        }
+    })
+
+    ipcMain.handle('read-file-by-path', async (_, filePath: string) => {
+        try {
+            const content = readFileSync(filePath, 'utf8')
+            const fileName = filePath.split('/').pop() || 'Untitled'
+            return { content, fileName, filePath }
+        } catch (error) {
+            console.error('Error reading file by path:', error)
+            return null
         }
     })
 }

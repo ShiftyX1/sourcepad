@@ -198,7 +198,8 @@ class EditorManager {
         fileName: 'Untitled',
         language: 'javascript',
         content: '',
-        isModified: false
+        isModified: false,
+        filePath: undefined
     }
 
     constructor() {
@@ -289,14 +290,16 @@ class EditorManager {
 
         let initialContent = '// Welcome to SourcePad!\n// Start typing your code here...'
         let initialLanguage = 'javascript'
+        let initialFilePath: string | undefined = undefined
 
         const openFileData = sessionStorage.getItem('openFile')
         if (openFileData) {
             try {
-                const { content, fileName } = JSON.parse(openFileData)
+                const { content, fileName, filePath } = JSON.parse(openFileData)
                 initialContent = content
                 initialLanguage = this.getLanguageByExtension(this.getFileExtension(fileName))
                 this.context.fileName = fileName
+                initialFilePath = filePath
                 sessionStorage.removeItem('openFile') // Очищаем после использования
             } catch (error) {
                 console.error('Failed to parse open file data:', error)
@@ -310,6 +313,7 @@ class EditorManager {
 
         this.context.language = initialLanguage
         this.context.content = initialContent
+        this.context.filePath = initialFilePath
 
         this.editor = monaco.editor.create(editorElement, {
             value: initialContent,
@@ -409,6 +413,7 @@ class EditorManager {
         })
 
         document.getElementById('saveBtn')?.addEventListener('click', () => this.saveFile())
+        document.getElementById('saveAsBtn')?.addEventListener('click', () => this.saveFileAs())
         document.getElementById('openBtn')?.addEventListener('click', () => this.openFile())
 
         document.getElementById('themeToggle')?.addEventListener('click', () => this.toggleTheme())
@@ -434,6 +439,7 @@ class EditorManager {
         }
 
         this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => this.saveFile())
+        this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS, () => this.saveFileAs())
         this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO, () => this.openFile())
         this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN, () => this.newFile())
 
@@ -589,19 +595,59 @@ class EditorManager {
 
         try {
             if (window.electronAPI) {
-                const result = await window.electronAPI.saveFile(content, this.context.fileName)
-                if (result) {
-                    this.context.filePath = result
-                    this.context.isModified = false
-                    this.updateFileName(this.context.fileName)
-                    this.addToRecentFiles(result, this.context.fileName)
-                    console.log(`File saved: ${this.context.fileName}`)
+                if (this.context.filePath) {
+                    const result = await window.electronAPI.saveExistingFile(content, this.context.filePath)
+                    if (result) {
+                        this.context.isModified = false
+                        this.updateFileName(this.context.fileName)
+                        this.showNotification(`Файл сохранен: ${this.context.fileName}`, 'success')
+                        console.log(`File saved: ${this.context.fileName}`)
+                    }
+                } else {
+                    await this.saveFileAs()
                 }
             } else {
                 this.saveFileAsBrowser(content)
             }
         } catch (error) {
             console.error('Failed to save file:', error)
+            this.showNotification('Ошибка при сохранении файла', 'error')
+        }
+    }
+
+    private async saveFileAs(): Promise<void> {
+        if (!this.editor) return
+
+        const content = this.editor.getValue()
+
+        try {
+            if (window.electronAPI) {
+                const result = await window.electronAPI.saveFileAs(content, this.context.filePath)
+                if (result) {
+                    this.context.filePath = result
+                    const newFileName = result.split('/').pop() || 'Untitled'
+                    this.context.fileName = newFileName
+                    this.context.isModified = false
+                    
+                    const extension = this.getFileExtension(newFileName)
+                    const language = this.getLanguageByExtension(extension)
+                    if (language !== this.context.language) {
+                        this.context.language = language
+                        monaco.editor.setModelLanguage(this.editor.getModel()!, language)
+                        this.updateLanguageSelect(language)
+                        this.updateLanguageStatus(language)
+                    }
+                    
+                    this.updateFileName(newFileName)
+                    this.addToRecentFiles(result, newFileName)
+                    this.showNotification(`Файл сохранен как: ${newFileName}`, 'success')
+                    console.log(`File saved as: ${newFileName}`)
+                }
+            } else {
+                this.saveFileAsBrowser(content)
+            }
+        } catch (error) {
+            console.error('Failed to save file as:', error)
             this.showNotification('Ошибка при сохранении файла', 'error')
         }
     }
@@ -634,7 +680,7 @@ class EditorManager {
             if (window.electronAPI) {
                 const result = await window.electronAPI.openFile()
                 if (result && this.editor) {
-                    this.loadFileContent(result.content, result.fileName)
+                    this.loadFileContent(result.content, result.fileName, result.filePath)
                 }
             } else {
                 this.openFileFromBrowser()
@@ -665,7 +711,7 @@ class EditorManager {
         input.click()
     }
 
-    private loadFileContent(content: string, fileName: string): void {
+    private loadFileContent(content: string, fileName: string, filePath?: string): void {
         if (!this.editor) return
 
         this.editor.setValue(content)
@@ -682,7 +728,12 @@ class EditorManager {
             fileName,
             language,
             content,
-            isModified: false
+            isModified: false,
+            filePath
+        }
+
+        if (filePath) {
+            this.addToRecentFiles(filePath, fileName)
         }
 
         this.showNotification(`Файл открыт: ${fileName}`, 'success')
@@ -702,7 +753,8 @@ class EditorManager {
             fileName: 'Untitled.js',
             language: 'javascript',
             content: '// New file\n',
-            isModified: false
+            isModified: false,
+            filePath: undefined
         }
 
         monaco.editor.setModelLanguage(this.editor.getModel()!, 'javascript')
