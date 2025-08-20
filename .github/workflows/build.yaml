@@ -5,25 +5,31 @@ on:
     branches: [ master, main ]
     paths:
       - 'src/**'
-      - 'ui/**' 
       - 'assets/**'
       - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - 'electron/**'
-      - 'webpack.config.js'
+      - 'vite.config.ts'
+      - 'eslint.config.js'
+      - 'tsconfig.json'
+      - 'tsconfig.node.json'
+      - 'vite.preload.config.ts'
     tags: [ 'v*' ]
   pull_request:
     branches: [ master, main ]
     paths:
       - 'src/**'
-      - 'ui/**'
       - 'assets/**' 
       - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - 'electron/**'
-      - 'webpack.config.js'
+      - 'vite.config.ts'
+      - 'eslint.config.js'
+      - 'tsconfig.json'
+      - 'tsconfig.node.json'
+      - 'vite.preload.config.ts'
 
 jobs:
   detect-changes:
@@ -39,13 +45,16 @@ jobs:
           filters: |
             app:
               - 'src/**'
-              - 'ui/**'
               - 'assets/**'
               - 'scripts/**'
               - 'package.json'
               - 'package-lock.json'
               - 'electron/**'
-              - 'webpack.config.js'
+              - 'vite.config.ts'
+              - 'eslint.config.js'
+              - 'tsconfig.json'
+              - 'tsconfig.node.json'
+              - 'vite.preload.config.ts'
             docs:
               - 'docs/**'
               - '*.md'
@@ -105,9 +114,9 @@ jobs:
       with:
         name: linux-builds
         path: |
-          dist/*.AppImage
-          dist/*.deb
-          dist/*.rpm
+          dist-electron/*.AppImage
+          dist-electron/*.deb
+          dist-electron/*.rpm
 
     - name: Upload artifacts (Windows)
       if: matrix.os == 'windows-latest'
@@ -115,8 +124,8 @@ jobs:
       with:
         name: windows-builds
         path: |
-          dist/*.exe
-          dist/*.msi
+          dist-electron/*.exe
+          dist-electron/*.msi
 
     - name: Upload artifacts (macOS)
       if: matrix.os == 'macos-latest'
@@ -124,8 +133,8 @@ jobs:
       with:
         name: macos-builds
         path: |
-          dist/*.dmg
-          dist/*.zip
+          dist-electron/*.dmg
+          dist-electron/*.zip
 
   release:
     if: |

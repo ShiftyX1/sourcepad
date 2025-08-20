@@ -3,3 +3,5 @@ ui/monaco-editor
 dist/
 
 .DS_Store
+
+dist-electron

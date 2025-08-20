@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>SourcePad - Code Editor</title>
-    <link rel="stylesheet" href="./styles/editor.css">
+    <link rel="stylesheet" href="./editor.css">
 </head>
 <body>
     <div class="menu-bar">
@@ -47,14 +47,15 @@
         <div class="status-left">
             <span class="status-item" id="lineCount">Lines: 0</span>
             <span class="status-item" id="charCount">Characters: 0</span>
+            <span class="status-item" id="wordCount">Words: 0</span>
         </div>
         
         <div class="status-right">
             <span class="status-item" id="cursorPosition">Ln 1, Col 1</span>
+            <span class="status-item" id="languageStatus">JavaScript</span>
             <button class="status-btn" id="themeToggle">🌙 Dark</button>
         </div>
     </div>
-    <script src="./monaco-editor/vs/loader.js"></script>
-    <script src="./js/editor.js"></script>
+    <script type="module" src="./editor.ts"></script>
 </body>
 </html>

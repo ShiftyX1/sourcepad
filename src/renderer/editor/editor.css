@@ -12,6 +12,10 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .menu-bar {
@@ -83,6 +87,7 @@ body {
     font-size: 11px;
     border-radius: 3px;
     outline: none;
+    min-width: 80px;
 }
 
 .language-select:focus {
@@ -122,6 +127,7 @@ body {
 .status-item {
     font-size: 11px;
     font-weight: 400;
+    white-space: nowrap;
 }
 
 .status-btn {
@@ -147,11 +153,11 @@ body {
     background-color: #1e1e1e !important;
 }
 
-.monaco-editor .monaco-scrollable-element>.scrollbar>.slider {
+.monaco-editor .monaco-scrollable-element > .scrollbar > .slider {
     background: rgba(121, 121, 121, 0.4) !important;
 }
 
-.monaco-editor .monaco-scrollable-element>.scrollbar>.slider:hover {
+.monaco-editor .monaco-scrollable-element > .scrollbar > .slider:hover {
     background: rgba(121, 121, 121, 0.7) !important;
 }
 
@@ -177,6 +183,18 @@ body {
     background: #1e1e1e;
 }
 
+body.light-theme .monaco-editor .margin {
+    background-color: #ffffff !important;
+}
+
+body.light-theme .monaco-editor ::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+
+body.light-theme .monaco-editor ::-webkit-scrollbar-corner {
+    background: #ffffff;
+}
+
 body.light-theme {
     background: #ffffff;
     color: #333333;
@@ -196,6 +214,11 @@ body.light-theme .menu-btn:hover {
     color: #000000;
 }
 
+body.light-theme .back-btn:hover {
+    background: #007acc;
+    color: #ffffff;
+}
+
 body.light-theme .file-name {
     color: #333333;
 }
@@ -204,6 +227,10 @@ body.light-theme .language-select {
     background: #ffffff;
     border-color: #d1d1d1;
     color: #333333;
+}
+
+body.light-theme .language-select:focus {
+    border-color: #007acc;
 }
 
 body.light-theme .status-bar {
@@ -230,6 +257,11 @@ body.light-theme .status-bar {
         font-size: 12px;
     }
 
+    .language-select {
+        min-width: 60px;
+        font-size: 10px;
+    }
+
     .status-bar {
         padding: 0 5px;
     }
@@ -237,6 +269,15 @@ body.light-theme .status-bar {
     .status-left,
     .status-right {
         gap: 10px;
+    }
+
+    .status-item {
+        font-size: 10px;
+    }
+
+    .status-btn {
+        font-size: 10px;
+        padding: 1px 4px;
     }
 }
 
@@ -248,4 +289,28 @@ button:focus-visible {
 select:focus-visible {
     outline: 2px solid #007acc;
     outline-offset: 1px;
+}
+
+.menu-btn,
+.status-btn {
+    transition: all 0.15s ease;
+}
+
+.file-name {
+    transition: color 0.15s ease;
+}
+
+.monaco-editor .suggest-widget {
+    border: 1px solid #3e3e42 !important;
+    background: #252526 !important;
+}
+
+.monaco-editor .parameter-hints-widget {
+    border: 1px solid #3e3e42 !important;
+    background: #252526 !important;
+}
+
+.monaco-editor .monaco-hover {
+    border: 1px solid #3e3e42 !important;
+    background: #252526 !important;
 }

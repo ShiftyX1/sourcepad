@@ -10,6 +10,10 @@ body {
     color: #cccccc;
     height: 100vh;
     overflow: hidden;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .container {
@@ -150,6 +154,43 @@ body {
     font-size: 12px;
 }
 
+.recent-item {
+    padding: 8px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+    margin-bottom: 2px;
+}
+
+.recent-item:hover {
+    background: #2a2d2e;
+}
+
+.recent-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.recent-name {
+    font-size: 13px;
+    color: #cccccc;
+}
+
+.recent-path {
+    font-size: 11px;
+    color: #858585;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.recent-date {
+    font-size: 10px;
+    color: #6a6a6a;
+    margin-top: 2px;
+}
+
 .template-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -188,6 +229,7 @@ body {
 }
 
 .template-icon.js { background: #f7df1e; color: #000; }
+.template-icon.ts { background: #3178c6; color: #fff; }
 .template-icon.html { background: #e34f26; }
 .template-icon.css { background: #1572b6; }
 .template-icon.py { background: #3776ab; }
