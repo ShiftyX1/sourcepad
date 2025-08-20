@@ -4,7 +4,8 @@ import {
     TemplateType,
     EditorTheme,
     EditorStats,
-    EditorContext
+    EditorContext,
+    RecentFile
 } from '../types'
 
 // Setup Monaco Editor to make it work with Vite
@@ -719,8 +720,8 @@ class EditorManager {
                 lastOpened: new Date(),
                 language: this.context.language
             }
-
-            const filtered = recentFiles.filter((file: File) => file.path !== filePath)
+            
+            const filtered = recentFiles.filter((file: RecentFile) => file.path !== filePath)
 
             filtered.unshift(newFile)
 
