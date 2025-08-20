@@ -1,6 +1,6 @@
 {
   "name": "sourcepad",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "SourcePad - simple code editor with TypeScript and Vite",
   "main": "dist/main/main.js",
   "homepage": "https://github.com/ShiftyX1/sourcepad",
