@@ -1,0 +1,109 @@
+name: Lint and Auto-fix
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run lint check
+      id: lint-check
+      run: |
+        echo "Running initial lint check..."
+        if npm run lint 2>&1 | tee lint-output.log; then
+          echo "lint_passed=true" >> $GITHUB_OUTPUT
+          echo "✅ Lint passed successfully"
+        else
+          # Check if there are actual errors (not just warnings)
+          if grep -E "(error|Error)" lint-output.log; then
+            echo "lint_passed=false" >> $GITHUB_OUTPUT
+            echo "❌ Lint found errors"
+          else
+            echo "lint_passed=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Lint completed with warnings only - treating as success"
+          fi
+        fi
+      continue-on-error: true
+
+    - name: Auto-fix lint errors
+      if: steps.lint-check.outputs.lint_passed == 'false'
+      run: |
+        echo "🔧 Attempting to auto-fix lint errors..."
+        npm run lint:fix
+
+    - name: Run lint check after auto-fix
+      if: steps.lint-check.outputs.lint_passed == 'false'
+      id: lint-recheck
+      run: |
+        echo "Running lint check after auto-fix..."
+        if npm run lint 2>&1 | tee lint-recheck-output.log; then
+          echo "recheck_passed=true" >> $GITHUB_OUTPUT
+          echo "✅ Lint passed after auto-fix"
+        else
+          # Check if there are still actual errors (not just warnings)
+          if grep -E "(error|Error)" lint-recheck-output.log; then
+            echo "recheck_passed=false" >> $GITHUB_OUTPUT
+            echo "❌ Lint still has errors after auto-fix"
+          else
+            echo "recheck_passed=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Lint completed with warnings only after auto-fix - treating as success"
+          fi
+        fi
+
+    - name: Commit auto-fix changes
+      if: steps.lint-check.outputs.lint_passed == 'false' && steps.lint-recheck.outputs.recheck_passed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Check if there are any changes to commit
+        if ! git diff --quiet; then
+          git add .
+          git commit -m "🔧 Auto-fix lint errors [skip ci]"
+          git push
+          echo "✅ Auto-fix changes committed and pushed"
+        else
+          echo "ℹ️ No changes to commit after auto-fix"
+        fi
+
+    - name: Fail if lint errors persist
+      if: steps.lint-check.outputs.lint_passed == 'false' && steps.lint-recheck.outputs.recheck_passed == 'false'
+      run: |
+        echo "❌ Lint errors persist after auto-fix attempt"
+        echo "Please review and fix the remaining issues manually:"
+        cat lint-recheck-output.log
+        exit 1
+
+    - name: Summary
+      run: |
+        echo "## Lint Summary" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.lint-check.outputs.lint_passed }}" == "true" ]; then
+          echo "✅ Initial lint check passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "🔧 Auto-fix was applied" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.lint-recheck.outputs.recheck_passed }}" == "true" ]; then
+            echo "✅ Lint passed after auto-fix" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Lint errors persist after auto-fix" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi

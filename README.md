@@ -1,6 +1,6 @@
 # Shifty's SourcePad
 
-Simple code editor built with Monaco Editor and Electron.
+Simple code editor built with Monaco Editor and Electron + TypeScript/Vite.
 
 [![Release](https://img.shields.io/github/v/release/ShiftyX1/sourcepad)](https://github.com/ShiftyX1/sourcepad/releases)
 [![GitHub downloads](https://img.shields.io/github/downloads/ShiftyX1/sourcepad/total)](https://github.com/ShiftyX1/sourcepad/releases)
@@ -35,13 +35,8 @@ cd sourcepad
 # Install dependencies
 npm install
 
-# Setup Monaco Editor files
-npm run setup
-
 # Start development
-npm start
-# OR
-npm run dev
+npm run dev:full
 ```
 
 ## Development
@@ -53,8 +48,7 @@ npm run dev
 ### Setup
 ```bash
 npm install          # Install all dependencies
-npm run setup        # Copy Monaco Editor files
-npm start           # Start in development mode
+npm run dev:full     # Start in development mode
 ```
 
 ### Building for Production
@@ -76,21 +70,19 @@ npm run pack
 
 ```
 sourcepad/
-├── src/                    # Electron main process
-│   ├── main.js            # Main entry point
-│   └── preload.js         # Preload script
-├── ui/                # Frontend assets
-│   ├── index.html         # Start page
-│   ├── editor.html        # Editor page
-│   ├── styles/           # CSS files
-│   ├── js/               # JavaScript files
-│   └── monaco-editor/    # Monaco Editor files (script setup)
+├── src/
+│   ├── main/           # Backend Electron logic and app entrypoint
+│   │   ├── main.ts
+│   │   └── preload.ts
+│   └── renderer/       # Frontend components and logic
+│       ├── editor/
+│       ├── start-page/
+│       ├── types/
+│       └── vite-env.d.ts
 ├── scripts/              # Build scripts
-│   ├── setup-monaco.js   # Monaco setup
-│   └── generate-icons.js # Icon generator
-├── assets/               # App icons and resources
-├── .github/workflows/    # GitHub Actions
-└── dist/                # Build output
+│   ├── setup-monaco.js   # Monaco setup (Legacy, will be removed)
+│   └── kill-processes.sh # Helper script
+└── assets/               # App icons and resources
 ```
 
 ## Contributing

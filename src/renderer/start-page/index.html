@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SourcePad</title>
-    <link rel="stylesheet" href="./styles/start-page.css">
+    <link rel="stylesheet" href="./start-page.css">
 </head>
-
 <body>
     <div class="container">
         <div class="header">
@@ -15,7 +13,7 @@
                 <span class="logo">⚡</span>
                 <span class="app-name">SourcePad</span>
             </div>
-            <div class="version">v0.0.2</div>
+            <div class="version" id="version">v0.0.2</div>
         </div>
 
         <div class="content">
@@ -55,6 +53,10 @@
                         <button class="template-item" data-template="javascript">
                             <span class="template-icon js">JS</span>
                             <span class="template-name">JavaScript</span>
+                        </button>
+                        <button class="template-item" data-template="typescript">
+                            <span class="template-icon ts">TS</span>
+                            <span class="template-name">TypeScript</span>
                         </button>
                         <button class="template-item" data-template="html">
                             <span class="template-icon html">HTML</span>
@@ -100,7 +102,6 @@
         </div>
     </div>
 
-    <script src="./js/start-page.js"></script>
+    <script type="module" src="./start-page.ts"></script>
 </body>
-
 </html>
