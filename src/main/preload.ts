@@ -7,6 +7,7 @@ interface ElectronAPI {
   saveFileAs: (content: string, currentFilePath?: string) => Promise<string | null>
   saveExistingFile: (content: string, filePath: string) => Promise<string | null>
   openFile: () => Promise<{ content: string; fileName: string; filePath: string } | null>
+  readFileByPath: (filePath: string) => Promise<{ content: string; fileName: string; filePath: string } | null>
 
   // Dialogs
   showSaveDialog: (defaultPath?: string) => Promise<string | null>
@@ -46,6 +47,9 @@ const electronAPI: ElectronAPI = {
   
   openFile: () => 
     ipcRenderer.invoke('open-file'),
+  
+  readFileByPath: (filePath: string) => 
+    ipcRenderer.invoke('read-file-by-path', filePath),
   
   showSaveDialog: (defaultPath?: string) => 
     ipcRenderer.invoke('show-save-dialog', defaultPath),

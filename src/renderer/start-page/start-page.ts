@@ -199,6 +199,16 @@ class StartPageManager {
             })
         })
 
+        const clearRecentBtn = document.getElementById('clearRecentBtn')
+        clearRecentBtn?.addEventListener('click', () => {
+            if (this.recentFiles.length > 0) {
+                const confirm = window.confirm('Are you sure you want to clear all recent files?')
+                if (confirm) {
+                    this.clearAllRecentFiles()
+                }
+            }
+        })
+
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey || e.metaKey) {
                 switch (e.key) {
@@ -261,7 +271,7 @@ class StartPageManager {
             if (window.electronAPI) {
                 const result = await window.electronAPI.openFile()
                 if (result) {
-                    this.openEditorWithFile(result.content, result.fileName)
+                    this.openEditorWithFile(result.content, result.fileName, result.filePath)
                 }
             }
         } catch (error) {
@@ -274,8 +284,8 @@ class StartPageManager {
         console.log('Open folder dialog - to be implemented')
     }
 
-    private openEditorWithFile(content: string, fileName: string): void {
-        sessionStorage.setItem('openFile', JSON.stringify({ content, fileName }))
+    private openEditorWithFile(content: string, fileName: string, filePath?: string): void {
+        sessionStorage.setItem('openFile', JSON.stringify({ content, fileName, filePath }))
         this.openEditor()
     }
 
@@ -293,7 +303,13 @@ class StartPageManager {
 
     private renderRecentFiles(): void {
         const recentList = document.getElementById('recentList')
+        const clearRecentBtn = document.getElementById('clearRecentBtn')
+        
         if (!recentList) return
+
+        if (clearRecentBtn) {
+            clearRecentBtn.style.display = this.recentFiles.length > 0 ? 'block' : 'none'
+        }
 
         if (this.recentFiles.length === 0) {
             recentList.innerHTML = `
@@ -312,16 +328,31 @@ class StartPageManager {
             <span class="recent-name">${file.name}</span>
             <span class="recent-path">${file.path}</span>
           </div>
-          <span class="recent-date">${this.formatDate(file.lastOpened)}</span>
+          <div class="recent-actions">
+            <span class="recent-date">${this.formatDate(file.lastOpened)}</span>
+            <button class="recent-remove" data-path="${file.path}" title="Remove from recent files">×</button>
+          </div>
         </div>
       `)
             .join('')
 
         recentList.querySelectorAll('.recent-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const path = (item as HTMLElement).dataset.path
+            item.addEventListener('click', (e) => {
+                if (!(e.target as HTMLElement).classList.contains('recent-remove')) {
+                    const path = (item as HTMLElement).dataset.path
+                    if (path) {
+                        this.openRecentFile(path)
+                    }
+                }
+            })
+        })
+
+        recentList.querySelectorAll('.recent-remove').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation()
+                const path = (button as HTMLElement).dataset.path
                 if (path) {
-                    this.openRecentFile(path)
+                    this.removeFromRecentFiles(path)
                 }
             })
         })
@@ -340,8 +371,126 @@ class StartPageManager {
     }
 
     private async openRecentFile(path: string): Promise<void> {
-        // TODO: implement opening recent file logic
-        console.log('Opening recent file:', path)
+        try {
+            if (window.electronAPI) {
+                this.showLoadingIndicator(`Opening ${path.split('/').pop()}...`)
+                
+                const result = await window.electronAPI.readFileByPath(path)
+                if (result) {
+                    this.updateRecentFileTime(path)
+                    this.openEditorWithFile(result.content, result.fileName, result.filePath)
+                } else {
+                    this.removeFromRecentFiles(path)
+                    this.showNotification(`File not found: ${path}`, 'error')
+                    console.warn(`File not found: ${path}`)
+                }
+            }
+        } catch (error) {
+            console.error('Failed to open recent file:', error)
+            this.removeFromRecentFiles(path)
+            this.showNotification('Failed to open file', 'error')
+        } finally {
+            this.hideLoadingIndicator()
+        }
+    }
+
+    private updateRecentFileTime(path: string): void {
+        try {
+            const fileIndex = this.recentFiles.findIndex(file => file.path === path)
+            if (fileIndex !== -1) {
+                this.recentFiles[fileIndex].lastOpened = new Date()
+                const file = this.recentFiles.splice(fileIndex, 1)[0]
+                this.recentFiles.unshift(file)
+                localStorage.setItem('recentFiles', JSON.stringify(this.recentFiles))
+                this.renderRecentFiles()
+            }
+        } catch (error) {
+            console.error('Failed to update recent file time:', error)
+        }
+    }
+
+    private removeFromRecentFiles(path: string): void {
+        try {
+            this.recentFiles = this.recentFiles.filter(file => file.path !== path)
+            localStorage.setItem('recentFiles', JSON.stringify(this.recentFiles))
+            this.renderRecentFiles()
+            this.showNotification('File removed from recent files', 'info')
+        } catch (error) {
+            console.error('Failed to remove from recent files:', error)
+        }
+    }
+
+    private clearAllRecentFiles(): void {
+        try {
+            this.recentFiles = []
+            localStorage.setItem('recentFiles', JSON.stringify(this.recentFiles))
+            this.renderRecentFiles()
+            this.showNotification('All recent files cleared', 'info')
+        } catch (error) {
+            console.error('Failed to clear recent files:', error)
+        }
+    }
+
+    private showLoadingIndicator(message: string): void {
+        const indicator = document.createElement('div')
+        indicator.id = 'loadingIndicator'
+        indicator.innerHTML = `
+            <div class="loading-backdrop">
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <span class="loading-message">${message}</span>
+                </div>
+            </div>
+        `
+        indicator.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `
+        document.body.appendChild(indicator)
+    }
+
+    private hideLoadingIndicator(): void {
+        const indicator = document.getElementById('loadingIndicator')
+        if (indicator) {
+            document.body.removeChild(indicator)
+        }
+    }
+
+    private showNotification(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
+        const notification = document.createElement('div')
+        notification.textContent = message
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            z-index: 1001;
+            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: opacity 0.3s ease;
+        `
+
+        document.body.appendChild(notification)
+
+        setTimeout(() => {
+            notification.style.opacity = '0'
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification)
+                }
+            }, 300)
+        }, 3000)
     }
 
     public crutch(): void {

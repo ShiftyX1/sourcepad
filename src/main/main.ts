@@ -256,6 +256,17 @@ function setupIPC(): void {
             return null
         }
     })
+
+    ipcMain.handle('read-file-by-path', async (_, filePath: string) => {
+        try {
+            const content = readFileSync(filePath, 'utf8')
+            const fileName = filePath.split('/').pop() || 'Untitled'
+            return { content, fileName, filePath }
+        } catch (error) {
+            console.error('Error reading file by path:', error)
+            return null
+        }
+    })
 }
 
 app.whenReady().then(() => {
