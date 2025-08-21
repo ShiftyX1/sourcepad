@@ -36,7 +36,8 @@
     "debug:electron": "ps aux | grep -i electron | grep -v grep",
     "debug:bundle": "ls -la dist/renderer/assets/ && echo '---' && ls -la dist/renderer/workers/",
     "debug:monaco": "find dist -name '*monaco*' -o -name '*worker*' | head -20",
-    "fix:permissions": "chmod +x scripts/*.sh"
+    "fix:permissions": "chmod +x scripts/*.sh",
+    "fix:electron": "node node_modules/.pnpm/electron@*/node_modules/electron/install.js"
   },
   "build": {
     "appId": "com.sourcepad.editor",
