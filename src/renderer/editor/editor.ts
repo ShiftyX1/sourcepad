@@ -2,11 +2,12 @@ import * as monaco from 'monaco-editor'
 import {
     Templates,
     TemplateType,
-    EditorTheme,
     EditorStats,
     EditorContext,
     RecentFile
 } from '../types'
+import { themeManager, Theme, THEMES } from '../utils/theme'
+import { defineMonacoThemes } from '../utils/monaco-themes'
 
 // Setup Monaco Editor to make it work with Vite
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
@@ -193,7 +194,6 @@ This project is licensed under the MIT License.`,
 
 class EditorManager {
     private editor: monaco.editor.IStandaloneCodeEditor | null = null
-    private currentTheme: EditorTheme = 'vs-dark'
     private context: EditorContext = {
         fileName: 'Untitled',
         language: 'javascript',
@@ -203,6 +203,7 @@ class EditorManager {
     }
 
     constructor() {
+        document.documentElement.setAttribute('data-theme', themeManager.getCurrentTheme())
         this.initializeEditor()
     }
 
@@ -211,8 +212,8 @@ class EditorManager {
             await this.setupMonaco()
             this.createEditor()
             this.setupEventListeners()
+            this.setupTheme()
             this.loadFromUrlParams()
-            this.loadSavedTheme()
             this.updateStats()
 
             console.log('SourcePad Editor initialized successfully!')
@@ -315,12 +316,15 @@ class EditorManager {
         this.context.content = initialContent
         this.context.filePath = initialFilePath
 
+        defineMonacoThemes()
+
         this.editor = monaco.editor.create(editorElement, {
             value: initialContent,
             language: initialLanguage,
-            theme: this.currentTheme,
+            theme: themeManager.getMonacoTheme(),
             automaticLayout: true,
             fontSize: 14,
+            fontFamily: 'JetBrains Mono, SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace',
             lineNumbers: 'on',
             roundedSelection: false,
             scrollBeyondLastLine: false,
@@ -416,8 +420,6 @@ class EditorManager {
         document.getElementById('saveAsBtn')?.addEventListener('click', () => this.saveFileAs())
         document.getElementById('openBtn')?.addEventListener('click', () => this.openFile())
 
-        document.getElementById('themeToggle')?.addEventListener('click', () => this.toggleTheme())
-
         this.editor.onDidChangeModelContent(() => {
             this.context.content = this.editor!.getValue()
             this.context.isModified = true
@@ -469,24 +471,29 @@ class EditorManager {
         }
     }
 
-    private loadSavedTheme(): void {
-        const saved = localStorage.getItem('editorTheme') as EditorTheme
-        if (saved && (saved === 'vs-dark' || saved === 'vs-light')) {
-            this.currentTheme = saved
-            if (this.editor) {
-                monaco.editor.setTheme(this.currentTheme)
-            }
+    private setupTheme(): void {
+        const themeToggle = document.getElementById('themeToggle')
+        const themeIcon = document.getElementById('themeIcon')
+        const themeText = document.getElementById('themeText')
 
-            const themeBtn = document.getElementById('themeToggle')
-            if (themeBtn) {
-                if (this.currentTheme === 'vs-light') {
-                    themeBtn.textContent = '☀️ Light'
-                    document.body.classList.add('light-theme')
-                } else {
-                    themeBtn.textContent = '🌙 Dark'
-                    document.body.classList.remove('light-theme')
+        if (themeToggle && themeIcon && themeText) {
+            const updateThemeUI = (theme: Theme) => {
+                const config = THEMES[theme]
+                themeIcon.textContent = config.icon
+                themeText.textContent = config.displayName
+                
+                if (this.editor) {
+                    monaco.editor.setTheme(themeManager.getMonacoTheme())
                 }
             }
+
+            updateThemeUI(themeManager.getCurrentTheme())
+
+            themeToggle.addEventListener('click', () => {
+                themeManager.toggleTheme()
+            })
+
+            themeManager.subscribe(updateThemeUI)
         }
     }
 
@@ -567,25 +574,6 @@ class EditorManager {
             'plaintext': 'Plain Text'
         }
         return displayNames[language] || language.toUpperCase()
-    }
-
-    private toggleTheme(): void {
-        const themeBtn = document.getElementById('themeToggle')
-        if (!themeBtn || !this.editor) return
-
-        if (this.currentTheme === 'vs-dark') {
-            this.currentTheme = 'vs-light'
-            themeBtn.textContent = '☀️ Light'
-            document.body.classList.add('light-theme')
-        } else {
-            this.currentTheme = 'vs-dark'
-            themeBtn.textContent = '🌙 Dark'
-            document.body.classList.remove('light-theme')
-        }
-
-        monaco.editor.setTheme(this.currentTheme)
-
-        localStorage.setItem('editorTheme', this.currentTheme)
     }
 
     private async saveFile(): Promise<void> {

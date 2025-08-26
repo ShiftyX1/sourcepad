@@ -1,4 +1,5 @@
 import { Templates, TemplateType, StartPageAction, RecentFile } from '../types'
+import { themeManager, Theme, THEMES } from '../utils/theme'
 
 const templates: Templates = {
     javascript: {
@@ -159,13 +160,37 @@ class StartPageManager {
     private recentFiles: RecentFile[] = []
 
     constructor() {
+        document.documentElement.setAttribute('data-theme', themeManager.getCurrentTheme())
         this.init()
     }
 
     private async init(): Promise<void> {
         await this.loadVersion()
         this.setupEventListeners()
+        this.setupTheme()
         this.loadRecentFiles()
+    }
+
+    private setupTheme(): void {
+        const themeToggle = document.getElementById('themeToggle')
+        const themeIcon = document.getElementById('themeIcon')
+        const themeText = document.getElementById('themeText')
+
+        if (themeToggle && themeIcon && themeText) {
+            const updateThemeUI = (theme: Theme) => {
+                const config = THEMES[theme]
+                themeIcon.textContent = config.icon
+                themeText.textContent = config.displayName
+            }
+
+            updateThemeUI(themeManager.getCurrentTheme())
+
+            themeToggle.addEventListener('click', () => {
+                themeManager.toggleTheme()
+            })
+
+            themeManager.subscribe(updateThemeUI)
+        }
     }
 
     private async loadVersion(): Promise<void> {
